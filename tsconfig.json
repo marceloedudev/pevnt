@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        /* ===== Saída e entrada ===== */
+        "baseUrl": "src", // Base para path aliases
+
+        /* ===== Módulos ===== */
+        "target": "ES2022", // Código moderno (Node 18+ suporta bem)
+        "module": "NodeNext", // ESM nativo
+        "moduleResolution": "NodeNext", // Resolução compatível com Node.js ESM
+        "esModuleInterop": true, // Permite importar CommonJS como default
+        "allowSyntheticDefaultImports": true, // Import mesmo sem default export
+        "resolveJsonModule": true, // Permite importar JSON
+        "allowImportingTsExtensions": true, // Permite importar ".ts" diretamente
+        "noEmit": true,
+
+        /* ===== Helpers ===== */
+        "importHelpers": true, // Usa tslib para helpers (__values, __awaiter, etc.)
+        "skipLibCheck": true, // Ignora checagem de tipos em libs (melhor performance)
+
+        /* ===== Segurança ===== */
+        "strict": true, // Ativa todas as verificações strict
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "exactOptionalPropertyTypes": false,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+
+        /* ===== Decorators ===== */
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+
+        /* ===== Mapas e depuração ===== */
+        "sourceMap": true,
+        "typeRoots": ["./src/@types", "./node_modules/@types"],
+        "types": ["node", "mocha", "chai"],
+        "useUnknownInCatchVariables": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": false
+    },
+    "exclude": ["node_modules", "dist"],
+    "extends": "./tsconfig.paths.json"
+}
