@@ -1,9 +1,13 @@
-export default class EventBinder {
+import { Exception } from "@/shared/errors/Exception";
+
+export class EventBinder {
     private handler?: (...args: any[]) => void;
 
     constructor(private readonly event: any) {
         if (!event || typeof event.on !== "function") {
-            throw new Error("Invalid event object: must have an .on() method");
+            throw new Exception(
+                "Invalid event object: must have an .on() method"
+            );
         }
     }
 

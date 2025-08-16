@@ -1,117 +1,130 @@
-# PEVNT
+# 📨 pevnt
 
-This project demonstrates how to implement a **Consumer** and a **Command** using an event-driven pattern, with support for **process** or **worker** transport types, and integration with `sendEventAndReturn`.
-
-## 📌 Overview
-
-The architecture is composed of two main components:
-
-1. **Command** (`item-command.ts`)  
-   Handles receiving parameters, executing actions (e.g., network requests, file I/O, system commands), and sending events to the `Consumer`.
-
-2. **Consumer** (`ItemConsumer.ts`)  
-   Receives events from the `Command`, processes the data (e.g., save to database, transform information), and returns responses.
+A lightweight **Command runner + Consumer abstraction** for Node.js (TypeScript), supporting both **Worker Threads** and **Child Processes**.
 
 ---
 
-### Command Implementation
+## 📦 Installation
 
-```typescript
+```bash
+npm install pevnt
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Create a Consumer
+
+`src/main.ts`
+
+```ts
+import { MessageConsumerBase, ITransportType } from "pevnt";
+
+const itemConsumer = new MessageConsumerBase()
+    .transport(ITransportType.PROCESS) // or ITransportType.WORKER
+    .command(({ params }) => ({
+        filename: "./src/item-command.ts",
+        argv: ["--itemid", `${params.itemId}`],
+    }))
+    .consumers(async ({ data }) => {
+        console.log({ data });
+        return { itemId: data.item_id };
+    });
+
+// Run the consumer
+await itemConsumer.create({
+    params: { itemId: 10 },
+});
+
+// Stop all running consumers later
+for (const id of itemConsumer.listConsumers()) {
+    await itemConsumer.stop(id);
+}
+```
+
+---
+
+### 2. Define the Command
+
+`src/item-command.ts`
+
+```ts
+import { CommandRunner, Delay } from "pevnt";
+
 export async function main() {
-    await Command(async ({ params, sendEventAndReturn, runWithLoop }) => {
+    await CommandRunner(async ({ params, sendEventAndReturn }) => {
         async function start({ itemid: item_id = 0 }) {
             const res = await sendEventAndReturn({
                 data: { item_id },
             });
-            console.log("item-command.ts >> ", { res });
-            // Network requests, file operations, system commands...
+            console.log({ res });
             await Delay(5000);
         }
-        await start(params as any);
+
+        await start(params);
     });
 }
 
-if (process.env.NODE_ENV !== "test") {
-    main();
+main();
+```
+
+---
+
+## 🔄 Flow
+
+1. **Consumer** (`MessageConsumerBase`) is created with a chosen transport (worker or process).
+2. A **Command** (`item-command.ts`) is registered with dynamic arguments.
+3. When executed, the **CommandRunner** communicates with the Consumer by sending/receiving messages.
+4. The `.consumers()` handler processes each incoming message.
+5. Consumers can later be **listed** with `.listConsumers()` and **stopped** with `.stop(id)`.
+
+---
+
+## 📘 API Reference
+
+### `MessageConsumerBase`
+
+-   `.transport(type: ITransportType)` → defines transport (`worker` or `process`)
+-   `.command(fn)` → registers the command with `filename` and `argv`
+-   `.consumers(handler)` → handles incoming messages
+-   `.create({ params })` → executes the command with given parameters
+-   `.listConsumers()` → async iterable of running consumer IDs
+-   `.stop(id)` → stops a specific consumer
+
+### `CommandRunner`
+
+Runs a command file with access to:
+
+-   `params` → parsed CLI arguments
+-   `sendEventAndReturn(payload, type?: string)` → sends a message back to the consumer and waits for response
+
+---
+
+## 🌐 Transport Options
+
+```ts
+enum ITransportType {
+    WORKER = "worker",
+    PROCESS = "process",
 }
 ```
 
-### Consumer Implementation
+-   **worker** → uses `Worker Threads`
+-   **process** → uses `Child Process`
 
-```typescript
-export default class ItemConsumer extends ConsumerAbstraction {
-    // DB instance...
-    constructor() {
-        super();
-    }
+---
 
-    public transport(): ITransportType {
-        return ITransportType.PROCESS; // or WORKER
-    }
+## 🛠 Development
 
-    public getCommand(params?: any): EventCommand {
-        return new ItemConsumerCommand(params);
-    }
+Build the package:
 
-    public getConsumers() {
-        return async ({ data }) => {
-            console.log("ItemConsumer.ts >> ", { data });
-            // Processing logic (save to database)
-            return { itemId: data.item_id };
-        };
-    }
-
-    public async create({ params }) {
-        const { id } = await super.create({
-            params: { itemId: params.itemId },
-        });
-        return { id };
-    }
-}
+```bash
+npm run build
 ```
 
----
+Run tests:
 
-## 📖 Execution Flow
-
-1. **Command** (`item-command.ts`) is triggered.
-2. It sends an event using `sendEventAndReturn`.
-3. **Consumer** (`ItemConsumer.ts`) processes the received data and returns a response.
-4. The **Command** continues execution after receiving the consumer's response.
-
----
-
-## 🛠 Full Example
-
-```typescript
-// Executing the command directly
-await Command(async ({ params, sendEventAndReturn }) => {
-    const res = await sendEventAndReturn({
-        data: { item_id: params.itemId },
-    });
-    console.log("Consumer response:", res);
-});
+```bash
+npm test
 ```
-
-```typescript
-// Consumer processing an event
-return async ({ data }) => {
-    console.log("Processing item:", data.item_id);
-    return { itemId: data.item_id };
-};
-```
-
----
-
-## ⚙️ Transport Configuration
-
-Inside the consumer’s `transport()` method, you can define:
-
--   `ITransportType.PROCESS` – Runs the consumer in a separate process.
--   `ITransportType.WORKER` – Runs the consumer in a worker thread.
-
----
-
-## 🧪 Tests
-
-If `NODE_ENV=test`, the `main()` function will **not** run automatically, allowing you to perform unit or integration tests.

@@ -1,7 +1,4 @@
-export default function matchDeepValue(
-    actualValue: any,
-    expectedValue: any
-): boolean {
+export function matchDeepValue(actualValue: any, expectedValue: any): boolean {
     const isPrimitiveExpected =
         typeof expectedValue === "string" ||
         typeof expectedValue === "number" ||

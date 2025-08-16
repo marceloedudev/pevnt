@@ -1,13 +1,14 @@
 import {
     IEventPayload,
     IEventResponseType,
-} from "@/domain/eventbus/IEventResponseType";
+} from "@/shared/interfaces/IEventResponseType";
 
-import EventBinder from "@/domain/event/EventBinder";
-import IEventMessage from "@/domain/eventbus/IEventMessage";
+import { EventBinder } from "@/domain/event/EventBinder";
+import { Exception } from "@/shared/errors/Exception";
+import { IEventMessage } from "@/shared/interfaces/IEventMessage";
 import { randomUUID as uuid } from "node:crypto";
 
-export default class EventMessageIPC implements IEventMessage {
+export class EventMessageIPC implements IEventMessage {
     public isEvent(): boolean {
         return !!process?.send;
     }
@@ -17,7 +18,7 @@ export default class EventMessageIPC implements IEventMessage {
         type?: string
     ) {
         if (!this.isEvent()) {
-            throw new Error("IPC channel not available");
+            throw new Exception("IPC channel not available");
         }
         const eventBinder = new EventBinder(process);
         try {

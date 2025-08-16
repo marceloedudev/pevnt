@@ -1,4 +1,4 @@
-import RandomNumber from "@/domain/numbers/Random";
+import { RandomNumber } from "@/domain/numbers/Random";
 import { expect } from "chai";
 
 describe("RandomNumber", () => {

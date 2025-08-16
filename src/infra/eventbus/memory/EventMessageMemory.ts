@@ -1,7 +1,8 @@
-import IEventMessage from "@/domain/eventbus/IEventMessage";
-import { IEventPayload } from "@/domain/eventbus/IEventResponseType";
+import { Exception } from "@/shared/errors/Exception";
+import { IEventMessage } from "@/shared/interfaces/IEventMessage";
+import { IEventPayload } from "@/shared/interfaces/IEventResponseType";
 
-export default class EventMessageMemory implements IEventMessage {
+export class EventMessageMemory implements IEventMessage {
     public isEvent(): boolean {
         return false;
     }
@@ -12,17 +13,19 @@ export default class EventMessageMemory implements IEventMessage {
     ): Promise<any> {
         const consumers = globalThis?.fakeDatabase?.getConsumers() || [];
         if (!consumers.length) {
-            throw new Error("Empty consumers");
+            throw new Exception("Empty consumers");
         }
         if (Array.isArray(consumers)) {
             for (const consumer of consumers) {
-                if (type && consumer.getStatus().getName() === type) {
+                if (type && consumer.getStatus() === type) {
                     try {
-                        const response = consumer.onMessage({ ...payload });
+                        const response = await consumer.onMessage({
+                            data: payload.data,
+                        });
                         if (response instanceof Function) {
-                            throw new Error("Bad response on event");
+                            throw new Exception("Bad response on event");
                         }
-                        return response || true;
+                        return response;
                     } catch (error: any) {
                         throw error;
                     }
@@ -30,11 +33,13 @@ export default class EventMessageMemory implements IEventMessage {
             }
         } else {
             try {
-                const response = await consumers({ ...payload });
+                const response = await consumers({
+                    data: payload.data,
+                });
                 if (response instanceof Function) {
-                    throw new Error("Bad response on event");
+                    throw new Exception("Bad response on event");
                 }
-                return response || true;
+                return response;
             } catch (error: any) {
                 throw error;
             }

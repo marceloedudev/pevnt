@@ -1,0 +1,23 @@
+{
+    "name": "tkrc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "tsx": "tsx ./src/index.ts",
+        "tsn": "ts-node --transpile-only -r ts-node/register -r tsconfig-paths/register ./src/index.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "acmdp": "^1.0.1",
+        "ps-node": "^0.1.6"
+    },
+    "devDependencies": {
+        "ts-node": "^10.9.2",
+        "tsconfig-paths": "^4.2.0",
+        "tsx": "^4.20.4",
+        "typescript": "^5.9.2"
+    }
+}

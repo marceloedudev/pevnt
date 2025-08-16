@@ -1,0 +1,17 @@
+{
+    "name": "tkrc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.mjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "acmdp": "^1.0.1",
+        "ps-node": "^0.1.6"
+    }
+}

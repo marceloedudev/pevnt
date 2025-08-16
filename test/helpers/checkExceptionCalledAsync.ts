@@ -1,6 +1,6 @@
-import matchDeepValue from "./matchDeepValue";
+import { matchDeepValue } from "./matchDeepValue";
 
-export default async function expectExceptionCalledAsync(
+export async function checkExceptionCalledAsync(
     spy: sinon.SinonSpy,
     errorClass: new (...args: any[]) => Error,
     expectedData?: unknown
@@ -15,9 +15,10 @@ export default async function expectExceptionCalledAsync(
                     await ret;
                     return false;
                 } catch (err: any) {
-                    if (!(err instanceof errorClass)) return false;
-
-                    if (expectedData === undefined || expectedData === true) {
+                    if (
+                        err instanceof errorClass &&
+                        expectedData === undefined
+                    ) {
                         return true;
                     }
 

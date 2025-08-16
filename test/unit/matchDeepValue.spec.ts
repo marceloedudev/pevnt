@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import matchDeepValue from "../helpers/matchDeepValue";
+import { matchDeepValue } from "../helpers/matchDeepValue";
 
 describe("matchDeepValue", () => {
     it("should not match subset in array", () => {

@@ -1,14 +1,15 @@
 import {
     IEventPayload,
     IEventResponseType,
-} from "@/domain/eventbus/IEventResponseType";
+} from "@/shared/interfaces/IEventResponseType";
 
-import EventBinder from "@/domain/event/EventBinder";
-import IEventMessage from "@/domain/eventbus/IEventMessage";
+import { EventBinder } from "@/domain/event/EventBinder";
+import { Exception } from "@/shared/errors/Exception";
+import { IEventMessage } from "@/shared/interfaces/IEventMessage";
 import { parentPort } from "node:worker_threads";
 import { randomUUID as uuid } from "node:crypto";
 
-export default class EventMessageWorker implements IEventMessage {
+export class EventMessageWorker implements IEventMessage {
     public isEvent(): boolean {
         return parentPort !== null;
     }
@@ -18,7 +19,7 @@ export default class EventMessageWorker implements IEventMessage {
         type?: string
     ): Promise<any> {
         if (!this.isEvent()) {
-            throw new Error("Worker threads not available");
+            throw new Exception("Worker threads not available");
         }
         const eventBinder = new EventBinder(parentPort);
         try {

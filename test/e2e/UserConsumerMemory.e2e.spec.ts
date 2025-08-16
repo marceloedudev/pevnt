@@ -1,16 +1,16 @@
 import "../helpers/fakeDatabase";
 
-import BadRequestException from "@/domain/error/BadRequestException";
-import NotFoundException from "@/domain/error/NotFoundException";
-import UserConsumer from "@/infra/event/consumer/UserConsumer/UserConsumer";
-import UserConsumerBegin from "@/infra/event/consumer/UserConsumer/steps/UserConsumerBegin";
-import UserConsumerCompleted from "@/infra/event/consumer/UserConsumer/steps/UserConsumerCompleted";
-import UserConsumerFailed from "@/infra/event/consumer/UserConsumer/steps/UserConsumerFailed";
-import checkExceptionCalledAsync from "../helpers/checkExceptionCalledAsync";
+import { BadRequestException } from "./fixture/error/BadRequestException";
+import { NotFoundException } from "./fixture/error/NotFoundException";
+import { UserConsumer } from "./fixture/consumer/UserConsumer/UserConsumer";
+import { UserConsumerBegin } from "./fixture/consumer/UserConsumer/steps/UserConsumerBegin";
+import { UserConsumerCompleted } from "./fixture/consumer/UserConsumer/steps/UserConsumerCompleted";
+import { UserConsumerFailed } from "./fixture/consumer/UserConsumer/steps/UserConsumerFailed";
+import { checkExceptionCalledAsync } from "../helpers/checkExceptionCalledAsync";
 import { expect } from "chai";
 import sinon from "sinon";
 
-describe("UserConsumer Memory E2E", () => {
+describe("UserConsumer E2E Memory", () => {
     afterEach(() => {
         sinon.restore();
     });
@@ -50,7 +50,7 @@ describe("UserConsumer Memory E2E", () => {
             })
         );
 
-        expect(consumer.listWorkers().length).to.be.equal(3);
+        expect(consumer.getConsumer().listConsumers().length).to.be.equal(3);
 
         expect(myConsumers).to.deep.equal([{ id: 1 }, { id: 2 }, { id: 3 }]);
 
@@ -77,10 +77,10 @@ describe("UserConsumer Memory E2E", () => {
         });
 
         for (const { id } of myConsumers) {
-            await consumer.stop(id);
+            await consumer.getConsumer().stop(id);
         }
 
-        expect(consumer.listWorkers().length).to.be.equal(0);
+        expect(consumer.getConsumer().listConsumers().length).to.be.equal(0);
 
         spyBegin.restore();
         spyCompleted.restore();
@@ -113,9 +113,9 @@ describe("UserConsumer Memory E2E", () => {
             data: { user_id: 11 },
         });
 
-        await consumer.stop(id);
+        await consumer.getConsumer().stop(id);
 
-        expect(consumer.listWorkers().length).to.be.equal(0);
+        expect(consumer.getConsumer().listConsumers().length).to.be.equal(0);
 
         spyBegin.restore();
         spyFailed.restore();
@@ -148,9 +148,9 @@ describe("UserConsumer Memory E2E", () => {
             data: { user_id: 0 },
         });
 
-        await consumer.stop(id);
+        await consumer.getConsumer().stop(id);
 
-        expect(consumer.listWorkers().length).to.be.equal(0);
+        expect(consumer.getConsumer().listConsumers().length).to.be.equal(0);
 
         spyBegin.restore();
         spyFailed.restore();
