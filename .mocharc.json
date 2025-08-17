@@ -1,7 +1,6 @@
 {
     "extension": ["ts"],
     "require": ["tsx"],
-    "spec": ["test/**/*.spec.ts"],
     "recursive": true,
     "timeout": 0,
     "node-option": []

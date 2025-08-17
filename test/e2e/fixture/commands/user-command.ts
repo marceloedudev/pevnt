@@ -1,6 +1,5 @@
 import { CommandRunner } from "@/index";
 import { Delay } from "@/shared/utils/Delay";
-import { RandomNumber } from "@/domain/numbers/Random";
 
 export async function main() {
     await CommandRunner(async ({ params, sendEventAndReturn }) => {
@@ -35,8 +34,7 @@ export async function main() {
                     "failed"
                 );
             } finally {
-                const timesecs = new RandomNumber().randomInRange(5, 10);
-                await Delay(timesecs * 1000);
+                await Delay(5000);
             }
         }
 

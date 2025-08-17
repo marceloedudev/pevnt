@@ -11,8 +11,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "acmdp": "^1.0.1",
-        "ps-node": "^0.1.6"
+        "pevnt": "^1.0.1"
     },
     "devDependencies": {
         "ts-node": "^10.9.2",

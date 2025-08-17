@@ -10,7 +10,7 @@ import {
     IStepMessagePayload,
     ITransportType,
     MessageConsumerBase,
-} from "../../../dist";
+} from "pevnt";
 
 import { Delay } from "./Delay";
 

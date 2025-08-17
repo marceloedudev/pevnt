@@ -1,4 +1,4 @@
-import { ITransportType, MessageConsumerBase } from "../../dist/index.mjs";
+import { ITransportType, MessageConsumerBase } from "pevnt";
 
 import { Delay } from "./Delay.mjs";
 

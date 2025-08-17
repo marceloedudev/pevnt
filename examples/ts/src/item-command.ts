@@ -1,4 +1,4 @@
-import { CommandRunner } from "../../../dist";
+import { CommandRunner } from "pevnt";
 import { Delay } from "./Delay";
 
 export async function main() {
@@ -15,4 +15,6 @@ export async function main() {
     });
 }
 
-main();
+if (process.env.NODE_ENV !== "test") {
+    main();
+}

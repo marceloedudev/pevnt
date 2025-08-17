@@ -167,7 +167,7 @@ export class ConsumerHandlerIPC implements IMessageConsumerBase {
                 await new ProcessManager().kill(this.pid);
             }
         } catch (error) {
-            console.log({ error });
+            console.error({ error });
         }
     }
 

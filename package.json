@@ -9,7 +9,9 @@
     ],
     "scripts": {
         "build": "tsup src/index.ts --format esm,cjs --dts",
-        "test": "npx cross-env NODE_ENV=test mocha",
+        "test:unit": "npx cross-env NODE_ENV=test mocha test/unit/**/*.spec.ts",
+        "test:e2e:memory": "npx cross-env NODE_ENV=test mocha test/e2e/memory/**/*.spec.ts",
+        "test:e2e:cli": "npx cross-env NODE_ENV=development mocha test/e2e/cli/**/*.spec.ts",
         "coverage": "nyc npm test",
         "prepublishOnly": "npm run build"
     },
@@ -30,7 +32,6 @@
     "homepage": "https://github.com/marceloedudev/pevnt#readme",
     "dependencies": {
         "acmdp": "^1.0.1",
-        "esmock": "^2.7.1",
         "ps-node": "^0.1.6",
         "tslib": "^2.8.1"
     },

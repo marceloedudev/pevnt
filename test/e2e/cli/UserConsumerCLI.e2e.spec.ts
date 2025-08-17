@@ -1,11 +1,11 @@
 import { expect } from "chai";
-import { getCommandCLI } from "../helpers/getCommandCLI";
+import { getCommandCLI } from "../../helpers/getCommandCLI";
 import path from "path";
-import { runCommandSpawn } from "../helpers/runCommandSpawn";
+import { runCommandSpawn } from "../../helpers/runCommandSpawn";
 
 describe("UserConsumer E2E CLI using spawn + close event", () => {
     it("should run successfully and exit with code 0", async () => {
-        const file = path.resolve("./test/e2e/fixture/cli/RunUser.ts");
+        const file = path.resolve("./test/e2e/fixture/runners/RunUser.ts");
 
         const { command, execArgv, filename } = getCommandCLI({ file });
 
@@ -20,7 +20,9 @@ describe("UserConsumer E2E CLI using spawn + close event", () => {
     });
 
     it("should fail with exit throw error duplicate user id", async () => {
-        const file = path.resolve("./test/e2e/fixture/cli/RunUserDuplicate.ts");
+        const file = path.resolve(
+            "./test/e2e/fixture/runners/RunUserDuplicate.ts"
+        );
 
         const { command, execArgv, filename } = getCommandCLI({ file });
 

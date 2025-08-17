@@ -1,8 +1,8 @@
-import "../helpers/fakeDatabase";
+import "../../helpers/fakeDatabase";
 
 import { Delay } from "@/shared/utils/Delay";
 import { ITransportType } from "@/index";
-import { ItemConsumer } from "./fixture/consumer/ItemConsumer";
+import { ItemConsumer } from "../fixture/consumer/ItemConsumer";
 import { MessageConsumerBase } from "@/infra/eventbus/MessageConsumerBase";
 import { expect } from "chai";
 import sinon from "sinon";

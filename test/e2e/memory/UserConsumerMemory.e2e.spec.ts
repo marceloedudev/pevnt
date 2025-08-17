@@ -1,12 +1,12 @@
-import "../helpers/fakeDatabase";
+import "../../helpers/fakeDatabase";
 
-import { BadRequestException } from "./fixture/error/BadRequestException";
-import { NotFoundException } from "./fixture/error/NotFoundException";
-import { UserConsumer } from "./fixture/consumer/UserConsumer/UserConsumer";
-import { UserConsumerBegin } from "./fixture/consumer/UserConsumer/steps/UserConsumerBegin";
-import { UserConsumerCompleted } from "./fixture/consumer/UserConsumer/steps/UserConsumerCompleted";
-import { UserConsumerFailed } from "./fixture/consumer/UserConsumer/steps/UserConsumerFailed";
-import { checkExceptionCalledAsync } from "../helpers/checkExceptionCalledAsync";
+import { BadRequestException } from "../fixture/error/BadRequestException";
+import { NotFoundException } from "../fixture/error/NotFoundException";
+import { UserConsumer } from "../fixture/consumer/UserConsumer/UserConsumer";
+import { UserConsumerBegin } from "../fixture/consumer/UserConsumer/steps/UserConsumerBegin";
+import { UserConsumerCompleted } from "../fixture/consumer/UserConsumer/steps/UserConsumerCompleted";
+import { UserConsumerFailed } from "../fixture/consumer/UserConsumer/steps/UserConsumerFailed";
+import { checkExceptionCalledAsync } from "../../helpers/checkExceptionCalledAsync";
 import { expect } from "chai";
 import sinon from "sinon";
 

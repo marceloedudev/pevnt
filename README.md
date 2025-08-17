@@ -50,7 +50,7 @@ for (const id of itemConsumer.listConsumers()) {
 `src/item-command.ts`
 
 ```ts
-import { CommandRunner, Delay } from "pevnt";
+import { CommandRunner } from "pevnt";
 
 export async function main() {
     await CommandRunner(async ({ params, sendEventAndReturn }) => {
@@ -59,14 +59,15 @@ export async function main() {
                 data: { item_id },
             });
             console.log({ res });
-            await Delay(5000);
         }
 
         await start(params);
     });
 }
 
-main();
+if (process.env.NODE_ENV !== "test") {
+    main();
+}
 ```
 
 ---
@@ -112,19 +113,3 @@ enum ITransportType {
 
 -   **worker** → uses `Worker Threads`
 -   **process** → uses `Child Process`
-
----
-
-## 🛠 Development
-
-Build the package:
-
-```bash
-npm run build
-```
-
-Run tests:
-
-```bash
-npm test
-```

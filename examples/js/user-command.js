@@ -1,4 +1,4 @@
-import { CommandRunner } from "../../dist/index.mjs";
+import { CommandRunner } from "pevnt";
 import { Delay } from "./Delay.mjs";
 
 export async function main() {
@@ -42,4 +42,6 @@ export async function main() {
     });
 }
 
-main();
+if (process.env.NODE_ENV !== "test") {
+    main();
+}

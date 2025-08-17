@@ -1,11 +1,11 @@
 import { expect } from "chai";
-import { getCommandCLI } from "../helpers/getCommandCLI";
+import { getCommandCLI } from "../../helpers/getCommandCLI";
 import path from "path";
-import { runCommandSpawn } from "../helpers/runCommandSpawn";
+import { runCommandSpawn } from "../../helpers/runCommandSpawn";
 
 describe("ItemConsumer E2E CLI using spawn + close event", () => {
     it("should run successfully and exit with code 0", async () => {
-        const file = path.resolve("./test/e2e/fixture/cli/RunItem.ts");
+        const file = path.resolve("./test/e2e/fixture/runners/RunItem.ts");
 
         const { command, execArgv, filename } = getCommandCLI({ file });
 
