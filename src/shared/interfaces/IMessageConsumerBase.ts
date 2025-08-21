@@ -1,13 +1,23 @@
-import { ICommandInput } from "./ICommandInput";
+import { IStepMessage, IStepMessagePayload } from "./IStepMessage";
+
+export interface IMessageConsumerRegister {
+    filename: string;
+    filetype: string;
+    params: any;
+    argv: string[];
+    consumers:
+        | Array<IStepMessage>
+        | ((arg: IStepMessagePayload<any>) => Promise<any>);
+}
 
 export interface IMessageConsumerBase {
     register({
-        command,
+        filename,
+        filetype,
+        params,
+        argv,
         consumers,
-    }: {
-        command: ICommandInput;
-        consumers: any;
-    }): Promise<IMessageConsumerBase>;
+    }: IMessageConsumerRegister): Promise<IMessageConsumerBase>;
     events({ onExit }): Promise<IMessageConsumerBase>;
     stop(): Promise<void>;
 }

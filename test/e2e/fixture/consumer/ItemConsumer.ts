@@ -7,18 +7,16 @@ export class ItemConsumer {
     constructor() {
         this.consumer = new MessageConsumerBase()
             .transport(ITransportType.PROCESS)
-            .command<any>(({ params }) => ({
-                filename: "./test/e2e/fixture/commands/item-command.ts",
-                argv: [
-                    "--itemid",
-                    `${params.itemId}`,
-                    "--itemid2",
-                    `${params.itemId}`,
-                ],
-            }))
+            .filename("./test/e2e/fixture/commands/item-command.ts")
             .consumers(async ({ data }: { data: any }) => {
                 console.log("ItemConsumer.ts >> ", { data });
                 return { itemId: data.item_id };
+            })
+            .onExit(({ id, code }) => {
+                console.log("Consumer on exit:", { id, code });
+            })
+            .onStop(({ id }) => {
+                console.log("Consumer on stop:", { id });
             });
     }
 

@@ -1,18 +1,9 @@
 import { Exception } from "@/shared/errors/Exception";
+import { IProcessLookupInput } from "@/shared/process/IProcessLookupInput";
+import { IProcessLookupOutput } from "@/shared/process/IProcessLookupOutput";
+import { IProcessManager } from "@/shared/process/IProcessManager";
 import { promisify } from "node:util";
 import ps from "ps-node";
-
-export interface IProcessLookupInput {
-    pid?: string;
-    command?: string;
-    arguments?: string[];
-}
-
-export interface IProcessLookupOutput {
-    pid: string;
-    command: string;
-    arguments: string[];
-}
 
 const psLookupAsync = promisify(ps.lookup) as (
     options: IProcessLookupInput
@@ -20,7 +11,7 @@ const psLookupAsync = promisify(ps.lookup) as (
 
 const killAsync = promisify(ps.kill);
 
-export class ProcessManager {
+export class ProcessManager implements IProcessManager {
     public async getProcessRunning(
         params: IProcessLookupInput
     ): Promise<IProcessLookupOutput[]> {

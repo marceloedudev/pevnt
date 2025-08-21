@@ -11,6 +11,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "pevnt": "^1.0.1"
+        "pevnt": "^1.0.3"
     }
 }

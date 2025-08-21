@@ -5,30 +5,41 @@ import {
     IUserFailedPayload,
     IUserParams,
 } from "./interfaces";
+// import {
+//     IStepMessage,
+//     IStepMessagePayload,
+//     ITransportType,
+//     MessageConsumerBase,
+// } from "pevnt";
 import {
     IStepMessage,
     IStepMessagePayload,
     ITransportType,
     MessageConsumerBase,
-} from "pevnt";
+} from "../../../dist";
 
 import { Delay } from "./Delay";
 
 (async () => {
     const itemConsumer = new MessageConsumerBase()
         .transport(ITransportType.WORKER)
-        .command<IItemParams>(({ params }: any) => ({
-            filename: "./src/item-command.ts",
-            argv: ["--itemid", `${params.itemId}`],
-        }))
+        .filename("./src/item-command.ts")
         .consumers(async ({ data }) => {
             console.log(".consumers() ", { data });
             return { itemId: data.item_id };
+        })
+        .onExit(({ id, code }) => {
+            console.log("Consumer on exit:", { id, code });
+        })
+        .onStop(({ id }) => {
+            console.log("Consumer on stop:", { id });
         });
 
-    await itemConsumer.create<IItemParams>({
+    const { id } = await itemConsumer.create<IItemParams>({
         params: { itemId: 10 },
     });
+
+    console.log({ exists: itemConsumer.exists(id) });
 
     for (const id of itemConsumer.listConsumers()) {
         await itemConsumer.stop(id);
@@ -42,10 +53,7 @@ import { Delay } from "./Delay";
 
     const userConsumer = new MessageConsumerBase()
         .transport(ITransportType.PROCESS)
-        .command<IUserParams>(({ params }) => ({
-            filename: "./src/user-command.ts",
-            argv: ["--userid", `${params.userId}`],
-        }))
+        .filename("./src/user-command.ts")
         .consumers([
             {
                 getStatus: (): string => "begin",
@@ -77,7 +85,13 @@ import { Delay } from "./Delay";
                     console.log("UserConsumerFailed ", { data });
                 },
             },
-        ] as IStepMessage[]);
+        ] as IStepMessage[])
+        .onExit(({ id, code }) => {
+            console.log("Consumer on exit:", { id, code });
+        })
+        .onStop(({ id }) => {
+            console.log("Consumer on stop:", { id });
+        });
 
     await userConsumer.create<IUserParams>({
         params: { userId: 88 },
@@ -101,6 +115,8 @@ import { Delay } from "./Delay";
         item: itemConsumer.listConsumers(),
         user: userConsumer.listConsumers(),
     });
+
+    await Delay(10000);
 
     [
         `exit`,

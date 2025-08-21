@@ -97,10 +97,7 @@ describe("ItemConsumer E2E Memory", () => {
         async function addConsumer() {
             const itemConsumer = new MessageConsumerBase()
                 .transport(ITransportType.WORKER)
-                .command(({ params }: any) => ({
-                    filename: "./src/item-command.json",
-                    argv: ["--itemid", `${params.itemId}`],
-                }))
+                .filename("./src/item-command.json")
                 .consumers(async ({ data }) => {
                     return { itemId: data.item_id };
                 });

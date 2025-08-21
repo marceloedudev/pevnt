@@ -11,7 +11,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "pevnt": "^1.0.1"
+        "pevnt": "^1.0.3"
     },
     "devDependencies": {
         "ts-node": "^10.9.2",

@@ -11,7 +11,7 @@ export class EventMessageMemory implements IEventMessage {
         payload: IEventPayload | null | undefined = undefined,
         type?: string
     ): Promise<any> {
-        const consumers = globalThis?.fakeDatabase?.getConsumers() || [];
+        const consumers = globalThis?.pevntFakeDatabase?.getConsumers() || [];
         if (!consumers.length) {
             throw new Exception("Empty consumers");
         }

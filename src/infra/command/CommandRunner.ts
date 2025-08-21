@@ -1,4 +1,4 @@
-import { CommandLineParser } from "./CommandLineParser";
+import { Arguments } from "../parser/Arguments";
 import { IEventPayload } from "@/shared/interfaces/IEventResponseType";
 import { MessageFactory } from "../eventbus/factory/MessageFactory";
 import { workerData } from "worker_threads";
@@ -18,13 +18,11 @@ export async function CommandRunner<P = any>(
             return isWorkerThread;
         }
         const isProcessChild = process.argv;
-        const { params } = await new CommandLineParser().execute(
-            isProcessChild
-        );
-        return params;
+        return new Arguments(isProcessChild).parse();
     };
 
     const eventMessage = new MessageFactory().createEventMessage();
+
     const params = await resolveParamsMessage();
 
     const sendEventAndReturn = async (

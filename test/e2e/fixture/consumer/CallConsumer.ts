@@ -7,12 +7,16 @@ export class CallConsumer {
     constructor() {
         this.consumer = new MessageConsumerBase()
             .transport(ITransportType.PROCESS)
-            .command<any>(({ params }) => ({
-                filename: "./test/e2e/fixture/commands/call-command.ts",
-            }))
+            .filename("./test/e2e/fixture/commands/call-command.ts")
             .consumers(async ({ data }: { data: any }) => {
                 console.log("CallConsumer.ts >> ", { data });
                 return -1;
+            })
+            .onExit(({ id, code }) => {
+                console.log("Consumer on exit:", { id, code });
+            })
+            .onStop(({ id }) => {
+                console.log("Consumer on stop:", { id });
             });
     }
 

@@ -6,10 +6,6 @@ export interface IUserParams {
     userId: number;
 }
 
-export interface IUserParamsCMD {
-    userid: number;
-}
-
 export interface IUserBeginPayload {
     user_id: number;
 }

@@ -1,33 +1,28 @@
+import {
+    IMessageConsumerBase,
+    IMessageConsumerRegister,
+} from "@/shared/interfaces/IMessageConsumerBase";
+
 import { Delay } from "@/shared/utils/Delay";
-import { DetectFileType } from "@/shared/utils/DetectFileType";
-import { Exception } from "@/shared/errors/Exception";
-import { ICommandInput } from "@/shared/interfaces/ICommandInput";
-import { IMessageConsumerBase } from "@/shared/interfaces/IMessageConsumerBase";
-import { ReplaceSrcWithAlias } from "@/domain/text/Replace";
+import { FileImport } from "@/domain/entity/FileImport";
 import path from "node:path";
 
 export class ConsumerHandlerMemory implements IMessageConsumerBase {
     public async register({
-        command,
+        filename,
+        filetype,
+        params,
+        argv,
         consumers,
-    }: {
-        command: ICommandInput;
-        consumers: any;
-    }): Promise<IMessageConsumerBase> {
-        globalThis?.fakeDatabase?.setConsumers(consumers);
-
-        const { filename, argv = [] } = command;
-
-        const filetype = DetectFileType(filename);
-
-        if (filetype === "unknown") {
-            throw new Exception("Invalid type file");
-        }
+    }: IMessageConsumerRegister): Promise<IMessageConsumerBase> {
+        globalThis?.pevntFakeDatabase?.setConsumers(consumers);
 
         const originalArgv = process.argv;
         process.argv = [...argv];
 
-        const file = ReplaceSrcWithAlias(path.resolve(path.join(filename)));
+        const file = new FileImport(
+            path.resolve(path.join(filename))
+        ).normalize();
 
         const cmd = await import(`${file}`);
 
@@ -48,7 +43,5 @@ export class ConsumerHandlerMemory implements IMessageConsumerBase {
         return this;
     }
 
-    public stop(): Promise<void> {
-        return;
-    }
+    public async stop(): Promise<void> {}
 }

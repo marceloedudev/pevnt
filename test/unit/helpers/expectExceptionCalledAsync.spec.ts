@@ -1,4 +1,4 @@
-import { checkExceptionCalledAsync } from "../helpers/checkExceptionCalledAsync";
+import { checkExceptionCalledAsync } from "../../helpers/checkExceptionCalledAsync";
 import { expect } from "chai";
 import sinon from "sinon";
 

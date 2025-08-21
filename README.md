@@ -1,6 +1,6 @@
 # 📨 pevnt
 
-A lightweight **Command runner + Consumer abstraction** for Node.js (TypeScript), supporting both **Worker Threads** and **Child Processes**.
+A lightweight **Command runner + Consumer** for Node.js (TypeScript), supporting both **Worker Threads** and **Child Processes**.
 
 ---
 
@@ -23,19 +23,24 @@ import { MessageConsumerBase, ITransportType } from "pevnt";
 
 const itemConsumer = new MessageConsumerBase()
     .transport(ITransportType.PROCESS) // or ITransportType.WORKER
-    .command(({ params }) => ({
-        filename: "./src/item-command.ts",
-        argv: ["--itemid", `${params.itemId}`],
-    }))
+    .filename("./src/item-command.ts")
     .consumers(async ({ data }) => {
         console.log({ data });
         return { itemId: data.item_id };
+    })
+    .onExit(({ id, code }) => {
+        console.log("Consumer on exit:", { id, code });
+    })
+    .onStop(({ id }) => {
+        console.log("Consumer on stop:", { id });
     });
 
 // Run the consumer
-await itemConsumer.create({
+const { id } = await itemConsumer.create({
     params: { itemId: 10 },
 });
+
+console.log({ exists: itemConsumer.exists(id) });
 
 // Stop all running consumers later
 for (const id of itemConsumer.listConsumers()) {
@@ -87,18 +92,44 @@ if (process.env.NODE_ENV !== "test") {
 ### `MessageConsumerBase`
 
 -   `.transport(type: ITransportType)` → defines transport (`worker` or `process`)
--   `.command(fn)` → registers the command with `filename` and `argv`
--   `.consumers(handler)` → handles incoming messages
+-   `.filename(path)` → registers filename
+-   `.consumers(handler)` → handles incoming messages. (handler: Array of Class/Object or Function)
+
+    ##### Function:
+
+    ```ts
+    .consumers(async ({ data }) => {
+        return { itemId: data.item_id };
+    })
+    ```
+
+    ##### Class/Object required methods: .getStatus() => "myStringId" .onMessage({ data }): Promise<any>
+
+```ts
+class UserConsumerCompleted implements IStepMessage {
+    public getStatus(): string {
+        return "completed";
+    }
+
+    public async onMessage({ data }) {
+        // code
+    }
+}
+```
+
 -   `.create({ params })` → executes the command with given parameters
--   `.listConsumers()` → async iterable of running consumer IDs
+-   `.listConsumers()` → iterable of running consumer IDs
 -   `.stop(id)` → stops a specific consumer
+-   `.exists(id)` → check if it is running
+-   `.onExit(handler: (args: { id: number; code: number }) => void)` → listen when executing .exit event
+-   `.onStop(handler: (args: { id: number }) => void)` → listen when stopped
 
 ### `CommandRunner`
 
 Runs a command file with access to:
 
--   `params` → parsed CLI arguments
--   `sendEventAndReturn(payload, type?: string)` → sends a message back to the consumer and waits for response
+-   `params` → parsed params from .create()
+-   `sendEventAndReturn(payload, type?: string)` → sends a message back to the consumer and waits for response. (type: status id from .consumers(handler))
 
 ---
 

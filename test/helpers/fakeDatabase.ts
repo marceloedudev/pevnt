@@ -1,4 +1,4 @@
-globalThis.fakeDatabase = {
+globalThis.pevntFakeDatabase = {
     consumers: [],
     setConsumers(consumers) {
         this.consumers = consumers;

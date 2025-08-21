@@ -1,16 +1,20 @@
-import { ITransportType, MessageConsumerBase } from "pevnt";
+// import { ITransportType, MessageConsumerBase } from "pevnt";
+import { ITransportType, MessageConsumerBase } from "../../dist/index.js";
 
 import { Delay } from "./Delay.mjs";
 
 const itemConsumer = new MessageConsumerBase()
     .transport(ITransportType.PROCESS)
-    .command(({ params }) => ({
-        filename: "./item-command.mjs",
-        argv: ["--itemid", `${params.itemId}`],
-    }))
+    .filename("./item-command.mjs")
     .consumers(async ({ data }) => {
         console.log(".consumers() ", { data });
         return { itemId: data.item_id };
+    })
+    .onExit(({ id, code }) => {
+        console.log("Consumer on exit:", { id, code });
+    })
+    .onStop(({ id }) => {
+        console.log("Consumer on stop:", { id });
     });
 
 await itemConsumer.create({
@@ -19,10 +23,7 @@ await itemConsumer.create({
 
 const userConsumer = new MessageConsumerBase()
     .transport(ITransportType.WORKER)
-    .command(({ params }) => ({
-        filename: "./user-command.js",
-        argv: ["--userid", `${params.userId}`],
-    }))
+    .filename("./user-command.js")
     .consumers([
         {
             getStatus: () => "begin",

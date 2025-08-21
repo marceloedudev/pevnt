@@ -1,9 +1,10 @@
-import { CommandRunner } from "pevnt";
+// import { CommandRunner } from "pevnt";
+import { CommandRunner } from "../../dist/index.js";
 import { Delay } from "./Delay.mjs";
 
 export async function main() {
     await CommandRunner(async ({ params, sendEventAndReturn }) => {
-        async function start({ userid: user_id = 0 }) {
+        async function start({ userId: user_id = 0 }) {
             try {
                 const { url } = await sendEventAndReturn(
                     {

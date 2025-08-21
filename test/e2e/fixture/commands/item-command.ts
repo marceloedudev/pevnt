@@ -3,7 +3,7 @@ import { Delay } from "@/shared/utils/Delay";
 
 export async function main() {
     await CommandRunner(async ({ params, sendEventAndReturn }) => {
-        async function start({ itemid: item_id = 0 }) {
+        async function start({ itemId: item_id = 0 }) {
             const res = await sendEventAndReturn({
                 data: { item_id },
             });

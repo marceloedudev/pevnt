@@ -14,15 +14,18 @@ export class UserConsumer {
         this.consumers = [];
         this.consumer = new MessageConsumerBase()
             .transport(ITransportType.WORKER)
-            .command<any>(({ params }) => ({
-                filename: "./test/e2e/fixture/commands/user-command.ts",
-                argv: ["--userid", `${params.userId}`],
-            }))
+            .filename("./test/e2e/fixture/commands/user-command.ts")
             .consumers([
                 new UserConsumerBegin(),
                 new UserConsumerCompleted(),
                 new UserConsumerFailed(),
-            ]);
+            ])
+            .onExit(({ id, code }) => {
+                console.log("Consumer on exit:", { id, code });
+            })
+            .onStop(({ id }) => {
+                console.log("Consumer on stop:", { id });
+            });
     }
 
     public async create({ params }) {
