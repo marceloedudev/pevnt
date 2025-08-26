@@ -1,7 +1,15 @@
-import { Arguments } from "../parser/Arguments";
 import { IEventPayload } from "@/shared/interfaces/IEventResponseType";
 import { MessageFactory } from "../eventbus/factory/MessageFactory";
+import { ParserFactory } from "../acmdp/ParserFactory";
 import { workerData } from "worker_threads";
+
+const getParamsFromArgv = (argv: string[]) => {
+    let params = {};
+    if (argv?.length > 0) {
+        params = new ParserFactory().createArgumentsParser().parse(argv);
+    }
+    return params;
+};
 
 export async function CommandRunner<P = any>(
     fn: (context: {
@@ -18,7 +26,7 @@ export async function CommandRunner<P = any>(
             return isWorkerThread;
         }
         const isProcessChild = process.argv;
-        return new Arguments(isProcessChild).parse();
+        return getParamsFromArgv(isProcessChild);
     };
 
     const eventMessage = new MessageFactory().createEventMessage();

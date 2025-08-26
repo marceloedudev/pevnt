@@ -11,8 +11,9 @@ import {
     IStepMessagePayload,
 } from "@/shared/interfaces/IStepMessage";
 
+import { ErrorTransport } from "@/domain/entity/ErrorTransport";
+import { Exception } from "@/shared/errors/Exception";
 import { Worker } from "worker_threads";
-import { isFunction } from "@/shared/utils/Check";
 import path from "node:path";
 
 export class ConsumerHandlerWorker implements IMessageConsumerBase {
@@ -45,10 +46,19 @@ export class ConsumerHandlerWorker implements IMessageConsumerBase {
     }
 
     public async events({ onExit }) {
+        this.worker.on("error", (err) => {
+            throw new Exception(`Failed worker: ${err?.message}`);
+        });
         this.worker.on("exit", (code) => onExit?.({ code: code ?? 0 }));
         this.worker.on("message", async (payload) =>
             this.handleMessage(payload)
         );
+        this.worker.on("close", (code) => {
+            const statusCode = code || 0;
+            if (statusCode !== 0) {
+                throw new Exception(`Worker exited with code ${statusCode}`);
+            }
+        });
         return this;
     }
 
@@ -78,13 +88,13 @@ export class ConsumerHandlerWorker implements IMessageConsumerBase {
                         await safeRespond(response, { type, id: eventId });
                     }
                 }
-            } else if (isFunction(consumers)) {
+            } else if (typeof consumers === "function") {
                 const response = await consumers({ data: rest.data });
                 await safeRespond(response, { id: eventId });
             }
         } catch (error: any) {
             await this.sendError(
-                { message: error.message },
+                { ...new ErrorTransport().serialize(error) },
                 { type, id: eventId }
             );
         }
@@ -92,6 +102,10 @@ export class ConsumerHandlerWorker implements IMessageConsumerBase {
 
     public async stop(): Promise<void> {
         await this.worker?.terminate?.();
+    }
+
+    public getPID(): string | null {
+        return null;
     }
 
     private async send(payload?: ITransportMessage, options?): Promise<void> {

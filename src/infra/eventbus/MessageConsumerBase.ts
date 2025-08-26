@@ -4,11 +4,10 @@ import {
 } from "@/shared/interfaces/IStepMessage";
 
 import { Exception } from "@/shared/errors/Exception";
-import { FileImport } from "@/domain/entity/FileImport";
 import { IMessageConsumerBase } from "@/shared/interfaces/IMessageConsumerBase";
-import { ITransportType } from "@/shared/interfaces/ITransportType";
-import { MessageFactory } from "./factory/MessageFactory";
-import { ParserFactory } from "../acmdp/ParserFactory";
+import { InMemoryDatabase } from "../database/InMemoryDatabase";
+import { OnCreateConsumer } from "./base/OnCreateConsumer";
+import { TransportType } from "@/shared/enums/TransportType";
 
 type ConsumerId = number;
 
@@ -16,17 +15,22 @@ export class MessageConsumerBase {
     private _consumers: Record<ConsumerId, IMessageConsumerBase> = {};
     private _idCounter: number = 1;
 
-    private _transport: ITransportType;
+    private _transport: TransportType | undefined;
     private _hooks:
         | Array<IStepMessage>
         | ((arg: IStepMessagePayload<any>) => Promise<any>);
-    private _filename: string;
+    private _filename: string | undefined;
     private exitHandler?: (args: { id: ConsumerId; code: number }) => void;
     private stopHandler?: (args: { id: ConsumerId }) => void;
 
-    public transport(name: ITransportType) {
+    public transport(name: TransportType) {
         this._transport = name;
+        InMemoryDatabase.getInstance().setTransport(name);
         return this;
+    }
+
+    public getTransport() {
+        return this._transport;
     }
 
     public filename(filename: string) {
@@ -61,38 +65,45 @@ export class MessageConsumerBase {
         }
     }
 
-    public async create<P>(data: { params?: P }): Promise<{ id: ConsumerId }> {
-        const { params = {} } = data || {};
-        const id = this._idCounter++;
-        const transport = this._transport;
-
-        const filetype = new FileImport(this._filename).detectFileType();
-
-        if (filetype === "unknown") {
-            throw new Exception("Invalid type file");
+    public async create<P>(data?: {
+        params?: P;
+    }): Promise<{ id: ConsumerId; pid: string | null }> {
+        if (!this._filename?.length) {
+            throw new Exception("Invalid filename");
         }
 
-        const argv = new ParserFactory()
-            .createArgumentsParser()
-            .unparse(params);
+        if (!this.getTransport()?.length) {
+            throw new Exception("Transport required");
+        }
 
-        const messager = await new MessageFactory()
-            .createMessageConsumer(transport)
-            .register({
-                filename: this._filename,
-                filetype,
-                params,
-                argv,
-                consumers: this.getHooks(),
-            });
-        await messager.events({
+        if (
+            ![
+                TransportType.MEMORY,
+                TransportType.PROCESS,
+                TransportType.WORKER,
+            ].includes(this.getTransport())
+        ) {
+            throw new Exception("Invalid transport");
+        }
+
+        const { params = {} } = data || {};
+        const id = this._idCounter++;
+
+        const messager = await new OnCreateConsumer({
+            transport: this.getTransport(),
+        }).execute({
+            filename: this._filename,
+            params,
+            consumers: this.getHooks(),
             onExit: async ({ code = 0 }) => {
                 await this.stop(id);
                 this.exitHandler?.({ id, code });
             },
         });
+
         this._consumers[id] = messager;
-        return { id };
+
+        return { id, pid: messager.getPID() };
     }
 
     public onExit(handler: (args: { id: ConsumerId; code: number }) => void) {

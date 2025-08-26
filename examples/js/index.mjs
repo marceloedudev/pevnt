@@ -1,10 +1,11 @@
-// import { ITransportType, MessageConsumerBase } from "pevnt";
-import { ITransportType, MessageConsumerBase } from "../../dist/index.js";
+// import { TransportType, MessageConsumerBase } from "pevnt";
+import { MessageConsumerBase, TransportType } from "../../dist/index.js";
 
 import { Delay } from "./Delay.mjs";
+import { UserConsumer } from "./UserConsumer.mjs";
 
 const itemConsumer = new MessageConsumerBase()
-    .transport(ITransportType.PROCESS)
+    .transport(TransportType.PROCESS)
     .filename("./item-command.mjs")
     .consumers(async ({ data }) => {
         console.log(".consumers() ", { data });
@@ -21,47 +22,31 @@ await itemConsumer.create({
     params: { itemId: 10 },
 });
 
-const userConsumer = new MessageConsumerBase()
-    .transport(ITransportType.WORKER)
-    .filename("./user-command.js")
-    .consumers([
-        {
-            getStatus: () => "begin",
-            onMessage: async ({ data }) => {
-                console.log("UserConsumerBegin ", { data });
-                const { user_id } = data;
-                const url = `string;;${user_id}`;
-                await Delay(1000);
-                return {
-                    url,
-                };
-            },
-        },
-        {
-            getStatus: () => "completed",
-            onMessage: async ({ data }) => {
-                console.log("UserConsumerCompleted ", { data });
-            },
-        },
-        {
-            getStatus: () => "failed",
-            onMessage: async ({ data }) => {
-                console.log("UserConsumerFailed ", { data });
-            },
-        },
-    ]);
+const userConsumer = new UserConsumer();
 
 await userConsumer.create({
     params: { userId: 88 },
 });
 
+await userConsumer.removeAll();
+
+await Delay(2000);
+
 await userConsumer.create({
     params: { userId: 89 },
 });
 
+await userConsumer.create({
+    params: { userId: 90 },
+});
+
+await userConsumer.create({
+    params: { userId: 12 },
+});
+
 console.log({
     item: itemConsumer.listConsumers(),
-    user: userConsumer.listConsumers(),
+    user: userConsumer.list(),
 });
 
 [
@@ -78,10 +63,7 @@ console.log({
                 console.log("remove item ", { id });
                 await itemConsumer.stop(id);
             }
-            for (const id of userConsumer.listConsumers()) {
-                console.log("remove user ", { id });
-                await userConsumer.stop(id);
-            }
+            await userConsumer.removeAll();
             await Delay(1000);
         } catch (error) {
             console.error({ error });

@@ -1,4 +1,4 @@
-import { CommandRunner } from "@/index";
+import { CommandRunner } from "@/infra/command/CommandRunner";
 import { Delay } from "@/shared/utils/Delay";
 
 export async function main() {
@@ -25,6 +25,7 @@ export async function main() {
                     "completed"
                 );
             } catch (error) {
+                console.error({ error });
                 await sendEventAndReturn(
                     {
                         data: {
@@ -42,6 +43,4 @@ export async function main() {
     });
 }
 
-if (process.env.NODE_ENV !== "test") {
-    main();
-}
+main();

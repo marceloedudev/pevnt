@@ -1,5 +1,9 @@
 # 📨 pevnt
 
+[![NPM Version][npm-image]][npm-url]
+[![License][license-image]][license-url]
+[![Downloads][downloads-image]][downloads-url]
+
 A lightweight **Command runner + Consumer** for Node.js (TypeScript), supporting both **Worker Threads** and **Child Processes**.
 
 ---
@@ -19,10 +23,10 @@ npm install pevnt
 `src/main.ts`
 
 ```ts
-import { MessageConsumerBase, ITransportType } from "pevnt";
+import { MessageConsumerBase, TransportType } from "pevnt";
 
 const itemConsumer = new MessageConsumerBase()
-    .transport(ITransportType.PROCESS) // or ITransportType.WORKER
+    .transport(TransportType.PROCESS) // or TransportType.WORKER
     .filename("./src/item-command.ts")
     .consumers(async ({ data }) => {
         console.log({ data });
@@ -91,7 +95,7 @@ if (process.env.NODE_ENV !== "test") {
 
 ### `MessageConsumerBase`
 
--   `.transport(type: ITransportType)` → defines transport (`worker` or `process`)
+-   `.transport(type: TransportType)` → defines transport (`worker` or `process`)
 -   `.filename(path)` → registers filename
 -   `.consumers(handler)` → handles incoming messages. (handler: Array of Class/Object or Function)
 
@@ -136,11 +140,20 @@ Runs a command file with access to:
 ## 🌐 Transport Options
 
 ```ts
-enum ITransportType {
-    WORKER = "worker",
-    PROCESS = "process",
+enum TransportType {
+    WORKER = "WORKER",
+    PROCESS = "PROCESS",
+    MEMORY = "MEMORY",
 }
 ```
 
--   **worker** → uses `Worker Threads`
--   **process** → uses `Child Process`
+-   **WORKER** → uses `Worker Threads`
+-   **PROCESS** → uses `Child Process`
+-   **MEMORY** → uses `await import` **main()**
+
+[npm-image]: https://img.shields.io/npm/v/pevnt.svg
+[npm-url]: https://npmjs.org/package/pevnt
+[license-image]: https://img.shields.io/npm/l/pevnt.svg
+[license-url]: https://github.com/marceloedudev/pevnt/blob/master/LICENSE
+[downloads-image]: https://img.shields.io/npm/dt/pevnt
+[downloads-url]: https://npmjs.org/package/pevnt

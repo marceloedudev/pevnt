@@ -1,6 +1,7 @@
 import { Exception } from "@/shared/errors/Exception";
 import { IEventMessage } from "@/shared/interfaces/IEventMessage";
 import { IEventPayload } from "@/shared/interfaces/IEventResponseType";
+import { InMemoryDatabase } from "@/infra/database/InMemoryDatabase";
 
 export class EventMessageMemory implements IEventMessage {
     public isEvent(): boolean {
@@ -11,7 +12,8 @@ export class EventMessageMemory implements IEventMessage {
         payload: IEventPayload | null | undefined = undefined,
         type?: string
     ): Promise<any> {
-        const consumers = globalThis?.pevntFakeDatabase?.getConsumers() || [];
+        const consumers = InMemoryDatabase.getInstance().getConsumers();
+
         if (!consumers.length) {
             throw new Exception("Empty consumers");
         }
@@ -26,7 +28,7 @@ export class EventMessageMemory implements IEventMessage {
                             throw new Exception("Bad response on event");
                         }
                         return response;
-                    } catch (error: any) {
+                    } catch (error) {
                         throw error;
                     }
                 }
@@ -40,7 +42,7 @@ export class EventMessageMemory implements IEventMessage {
                     throw new Exception("Bad response on event");
                 }
                 return response;
-            } catch (error: any) {
+            } catch (error) {
                 throw error;
             }
         }

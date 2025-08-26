@@ -3,6 +3,7 @@ import {
     IEventResponseType,
 } from "@/shared/interfaces/IEventResponseType";
 
+import { ErrorTransport } from "@/domain/entity/ErrorTransport";
 import { EventBinder } from "@/domain/event/EventBinder";
 import { Exception } from "@/shared/errors/Exception";
 import { IEventMessage } from "@/shared/interfaces/IEventMessage";
@@ -17,7 +18,7 @@ export class EventMessageIPC implements IEventMessage {
         payload: IEventPayload | null | undefined = undefined,
         type?: string
     ) {
-        if (!this.isEvent()) {
+        if (!this.isEvent() || !process?.connected) {
             throw new Exception("IPC channel not available");
         }
         const eventBinder = new EventBinder(process);
@@ -43,7 +44,11 @@ export class EventMessageIPC implements IEventMessage {
                             (type && eventType === type && eventId === id) ||
                             (!type && eventId === id)
                         ) {
-                            return error ? reject(error) : resolve(data as T);
+                            if (error) {
+                                const err = new ErrorTransport().rebuild(error);
+                                return reject(err);
+                            }
+                            return resolve(data as T);
                         }
                         return reject("Not found IPC response");
                     }

@@ -5,9 +5,16 @@ import {
 
 import { Delay } from "@/shared/utils/Delay";
 import { FileImport } from "@/domain/entity/FileImport";
+import { InMemoryDatabase } from "@/infra/database/InMemoryDatabase";
 import path from "node:path";
 
 export class ConsumerHandlerMemory implements IMessageConsumerBase {
+    private database: InMemoryDatabase;
+
+    constructor() {
+        this.database = InMemoryDatabase.getInstance();
+    }
+
     public async register({
         filename,
         filetype,
@@ -15,7 +22,7 @@ export class ConsumerHandlerMemory implements IMessageConsumerBase {
         argv,
         consumers,
     }: IMessageConsumerRegister): Promise<IMessageConsumerBase> {
-        globalThis?.pevntFakeDatabase?.setConsumers(consumers);
+        this.database.setConsumers(consumers);
 
         const originalArgv = process.argv;
         process.argv = [...argv];
@@ -44,4 +51,8 @@ export class ConsumerHandlerMemory implements IMessageConsumerBase {
     }
 
     public async stop(): Promise<void> {}
+
+    public getPID(): string | null {
+        return null;
+    }
 }

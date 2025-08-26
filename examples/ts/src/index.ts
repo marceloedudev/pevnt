@@ -1,28 +1,18 @@
-import {
-    IItemParams,
-    IUserBeginPayload,
-    IUserCompletedPayload,
-    IUserFailedPayload,
-    IUserParams,
-} from "./interfaces";
 // import {
 //     IStepMessage,
 //     IStepMessagePayload,
-//     ITransportType,
+//     TransportType,
 //     MessageConsumerBase,
 // } from "pevnt";
-import {
-    IStepMessage,
-    IStepMessagePayload,
-    ITransportType,
-    MessageConsumerBase,
-} from "../../../dist";
+import { MessageConsumerBase, TransportType } from "../../../dist";
 
 import { Delay } from "./Delay";
+import { IItemParams } from "./interfaces";
+import { UserConsumer } from "./UserConsumer";
 
 (async () => {
     const itemConsumer = new MessageConsumerBase()
-        .transport(ITransportType.WORKER)
+        .transport(TransportType.WORKER)
         .filename("./src/item-command.ts")
         .consumers(async ({ data }) => {
             console.log(".consumers() ", { data });
@@ -51,69 +41,27 @@ import { Delay } from "./Delay";
         params: { itemId: 20 },
     });
 
-    const userConsumer = new MessageConsumerBase()
-        .transport(ITransportType.PROCESS)
-        .filename("./src/user-command.ts")
-        .consumers([
-            {
-                getStatus: (): string => "begin",
-                onMessage: async ({
-                    data,
-                }: IStepMessagePayload<IUserBeginPayload>) => {
-                    console.log("UserConsumerBegin ", { data });
-                    const { user_id } = data;
-                    const url = `string;;${user_id}`;
-                    await Delay(1000);
-                    return {
-                        url,
-                    };
-                },
-            },
-            {
-                getStatus: (): string => "completed",
-                onMessage: async ({
-                    data,
-                }: IStepMessagePayload<IUserCompletedPayload>) => {
-                    console.log("UserConsumerCompleted ", { data });
-                },
-            },
-            {
-                getStatus: (): string => "failed",
-                onMessage: async ({
-                    data,
-                }: IStepMessagePayload<IUserFailedPayload>) => {
-                    console.log("UserConsumerFailed ", { data });
-                },
-            },
-        ] as IStepMessage[])
-        .onExit(({ id, code }) => {
-            console.log("Consumer on exit:", { id, code });
-        })
-        .onStop(({ id }) => {
-            console.log("Consumer on stop:", { id });
-        });
+    const userConsumer = new UserConsumer();
 
-    await userConsumer.create<IUserParams>({
+    await userConsumer.create({
         params: { userId: 88 },
     });
 
-    for (const id of userConsumer.listConsumers()) {
-        await userConsumer.stop(id);
-    }
+    await userConsumer.removeAll();
 
     await Delay(2000);
 
-    await userConsumer.create<IUserParams>({
+    await userConsumer.create({
         params: { userId: 89 },
     });
 
-    await userConsumer.create<IUserParams>({
+    await userConsumer.create({
         params: { userId: 90 },
     });
 
     console.log({
         item: itemConsumer.listConsumers(),
-        user: userConsumer.listConsumers(),
+        user: userConsumer.list(),
     });
 
     await Delay(10000);
@@ -132,10 +80,7 @@ import { Delay } from "./Delay";
                     console.log("remove item ", { id });
                     await itemConsumer.stop(id);
                 }
-                for (const id of userConsumer.listConsumers()) {
-                    console.log("remove user ", { id });
-                    await userConsumer.stop(id);
-                }
+                await userConsumer.removeAll();
                 await Delay(1000);
             } catch (error) {
                 console.error({ error });

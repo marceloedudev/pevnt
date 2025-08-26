@@ -26,7 +26,8 @@
         "types": ["node", "mocha", "chai"],
         "useUnknownInCatchVariables": false,
         "noImplicitReturns": false,
-        "noImplicitThis": false
+        "noImplicitThis": false,
+        "isolatedModules": true
     },
     "exclude": ["node_modules", "dist"],
     "extends": "./tsconfig.paths.json"

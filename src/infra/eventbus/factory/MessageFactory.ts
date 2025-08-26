@@ -4,13 +4,21 @@ import { ConsumerHandlerWorker } from "../worker/ConsumerHandlerWorker";
 import { EventMessageIPC } from "../ipc/EventMessageIPC";
 import { EventMessageMemory } from "../memory/EventMessageMemory";
 import { EventMessageWorker } from "../worker/EventMessageWorker";
+import { Exception } from "@/shared/errors/Exception";
 import { IEventMessage } from "@/shared/interfaces/IEventMessage";
 import { IMessageConsumerBase } from "@/shared/interfaces/IMessageConsumerBase";
-import { ITransportType } from "@/shared/interfaces/ITransportType";
+import { InMemoryDatabase } from "@/infra/database/InMemoryDatabase";
+import { TransportType } from "@/shared/enums/TransportType";
 
 export class MessageFactory {
+    private database: InMemoryDatabase;
+
+    constructor() {
+        this.database = InMemoryDatabase.getInstance();
+    }
+
     public createEventMessage(): IEventMessage {
-        if (process.env.NODE_ENV === "test") {
+        if (this.database.getTransport() === TransportType.MEMORY) {
             return new EventMessageMemory();
         } else {
             const eventMessageIPC = new EventMessageIPC();
@@ -20,22 +28,20 @@ export class MessageFactory {
             } else if (eventMessageIPC.isEvent()) {
                 return eventMessageIPC;
             }
-            throw new Error("Invalid event");
+            throw new Exception("Invalid event");
         }
     }
 
     public createMessageConsumer(
-        transport: ITransportType
+        transport: TransportType
     ): IMessageConsumerBase {
-        if (process.env.NODE_ENV === "test") {
+        if (transport === TransportType.WORKER) {
+            return new ConsumerHandlerWorker();
+        } else if (transport === TransportType.PROCESS) {
+            return new ConsumerHandlerIPC();
+        } else if (transport === TransportType.MEMORY) {
             return new ConsumerHandlerMemory();
-        } else {
-            if (transport === ITransportType.WORKER) {
-                return new ConsumerHandlerWorker();
-            } else if (transport === ITransportType.PROCESS) {
-                return new ConsumerHandlerIPC();
-            }
-            throw new Error("Invalid consumer");
         }
+        throw new Exception("Invalid consumer");
     }
 }

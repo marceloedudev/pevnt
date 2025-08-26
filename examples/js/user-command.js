@@ -26,6 +26,7 @@ export async function main() {
                     "completed"
                 );
             } catch (error) {
+                console.log({ error });
                 await sendEventAndReturn(
                     {
                         data: {

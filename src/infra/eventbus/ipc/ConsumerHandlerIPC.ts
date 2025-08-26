@@ -12,28 +12,15 @@ import {
     IStepMessagePayload,
 } from "@/shared/interfaces/IStepMessage";
 
-import { IProcessManager } from "@/shared/process/IProcessManager";
-import { ProcessFactory } from "@/infra/process/ProcessFactory";
-import { isFunction } from "@/shared/utils/Check";
+import { ErrorTransport } from "@/domain/entity/ErrorTransport";
+import { Exception } from "@/shared/errors/Exception";
 
-/**
- * Error [ERR_IPC_CHANNEL_CLOSED]: Channel closed
- * 1: isRunning() && send();
- * 2: new Promise(reject(new Error()) = Channel closed - Safe: throw new Error());
- */
 export class ConsumerHandlerIPC implements IMessageConsumerBase {
     private subprocess!: ChildProcess;
     private pid!: string;
     private consumers!:
         | Array<IStepMessage>
         | ((arg: IStepMessagePayload<any>) => Promise<any>);
-
-    private processManager: IProcessManager;
-
-    constructor() {
-        const processFactory = new ProcessFactory();
-        this.processManager = processFactory.createProcessManager();
-    }
 
     public async register({
         filename,
@@ -65,6 +52,7 @@ export class ConsumerHandlerIPC implements IMessageConsumerBase {
         const [cmd, args] = spawnMap[filetype];
         this.subprocess = spawn(cmd, args, {
             stdio: ["inherit", "inherit", "inherit", "ipc"],
+            // stdio: ["pipe", "pipe", "pipe", "ipc"],
         });
         this.pid = `${this.subprocess.pid}`;
         return this;
@@ -73,11 +61,35 @@ export class ConsumerHandlerIPC implements IMessageConsumerBase {
     public async events({ onExit }): Promise<IMessageConsumerBase> {
         const { subprocess, consumers } = this;
 
-        subprocess.on("error", (err) => console.error({ err }));
+        subprocess.on("error", (err) => {
+            throw new Exception(`Failed process: ${err?.message}`);
+        });
+
         subprocess.on("exit", (code) => onExit?.({ code: code ?? 0 }));
+
         subprocess.on("message", async (payload) =>
             this.handleMessage(payload, consumers)
         );
+
+        // Pipe (error handle):
+
+        // let stderr = "";
+
+        // subprocess.stderr.on("data", (data) => {
+        //     stderr += data.toString();
+        // });
+
+        // subprocess.on("close", (code) => {
+        //     const statusCode = code || 0;
+        //     if (statusCode !== 0) {
+        //         const match = stderr.match(/Error:\s*(.+)/);
+        //         throw new Exception(
+        //             `Process exited with code ${statusCode} - ${
+        //                 match ? match[1] : stderr.trim()
+        //             }`
+        //         );
+        //     }
+        // });
 
         return this;
     }
@@ -110,35 +122,31 @@ export class ConsumerHandlerIPC implements IMessageConsumerBase {
                         await safeRespond(response, { type, id: eventId });
                     }
                 }
-            } else if (isFunction(consumers)) {
+            } else if (typeof consumers === "function") {
                 const response = await consumers({ data: rest.data });
                 await safeRespond(response, { id: eventId });
             }
-        } catch (error: any) {
+        } catch (error) {
             await this.sendError(
-                { message: error.message },
+                { ...new ErrorTransport().serialize(error) },
                 { type, id: eventId }
             );
         }
     }
 
-    private async isRunning() {
-        return this.processManager.isProcessRunning(this.pid);
+    public async stop(): Promise<void> {
+        if (this.subprocess && this.subprocess.connected) {
+            this.subprocess.kill();
+        }
     }
 
-    public async stop(): Promise<void> {
-        try {
-            if (this.subprocess && (await this.isRunning())) {
-                await this.processManager.kill(this.pid);
-            }
-        } catch (error) {
-            console.error({ error });
-        }
+    public getPID(): string | null {
+        return this.pid;
     }
 
     private async send(payload?: ITransportMessage, options?): Promise<void> {
         try {
-            if (this.subprocess?.send && (await this.isRunning())) {
+            if (this.subprocess?.send && this.subprocess.connected) {
                 this.subprocess.send({
                     data: payload?.data,
                     error: payload?.error,

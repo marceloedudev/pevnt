@@ -10,9 +10,9 @@
     "scripts": {
         "build": "tsup src/index.ts --format esm,cjs --dts",
         "test:unit": "npx cross-env NODE_ENV=test mocha test/unit/**/*.spec.ts",
-        "test:e2e:memory": "npx cross-env NODE_ENV=test mocha test/e2e/memory/**/*.spec.ts",
-        "test:e2e:cli": "npx cross-env NODE_ENV=development mocha test/e2e/cli/**/*.spec.ts",
-        "test:all": "npm run test:unit && npm run test:e2e:memory && npm run test:e2e:cli",
+        "test:e2e": "npx cross-env NODE_ENV=test mocha test/e2e/**/*.spec.ts",
+        "test:integration": "npx cross-env NODE_ENV=test mocha test/integration/**/*.spec.ts",
+        "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
         "coverage": "nyc npm run test:all",
         "prepublishOnly": "npm run build"
     },
@@ -34,7 +34,6 @@
     "license": "MIT",
     "dependencies": {
         "acmdp": "^1.0.2",
-        "ps-node": "^0.1.6",
         "tslib": "^2.8.1"
     },
     "devDependencies": {

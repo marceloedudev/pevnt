@@ -1,13 +1,13 @@
-import { CommandRunner } from "@/index";
+import { CommandRunner } from "@/infra/command/CommandRunner";
 import { Delay } from "@/shared/utils/Delay";
 
 export async function main() {
     await CommandRunner(async ({ params, sendEventAndReturn }) => {
         async function start({ itemId: item_id = 0 }) {
-            const res = await sendEventAndReturn({
+            const data = await sendEventAndReturn({
                 data: { item_id },
             });
-            console.log("item-command.ts >> ", { res });
+            console.log("CommandRunner (Item):", { data });
             await Delay(5000);
         }
 
@@ -15,6 +15,4 @@ export async function main() {
     });
 }
 
-if (process.env.NODE_ENV !== "test") {
-    main();
-}
+main();

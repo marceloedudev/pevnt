@@ -20,4 +20,5 @@ export interface IMessageConsumerBase {
     }: IMessageConsumerRegister): Promise<IMessageConsumerBase>;
     events({ onExit }): Promise<IMessageConsumerBase>;
     stop(): Promise<void>;
+    getPID(): string | null;
 }
